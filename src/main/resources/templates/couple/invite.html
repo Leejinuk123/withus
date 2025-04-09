@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>커플 연결</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- ✅ iOS 전체화면 웹앱 설정 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="WithUs">
+  <!-- iOS 홈화면 아이콘 -->
+  <link rel="apple-touch-icon" sizes="192x192" href="/icons/withuslogo.png">
+
+  <!-- 브라우저 탭 아이콘 -->
+  <link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
+
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #fffafc; }
+    .container { max-width: 480px; margin: 0 auto; text-align: center; }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      background: #ffc0cb;
+      color: white;
+      border: none;
+      margin-top: 20px;
+    }
+
+    .alert {
+      background: #ffe5e5;
+      color: #cc0000;
+      padding: 15px;
+      margin: 20px auto;
+      border-radius: 8px;
+      font-size: 15px;
+      word-break: break-word;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .fixed-width-box {
+      width: 260px; /* ✅ 버튼과 메시지 폭 고정 */
+      margin: 0 auto;
+    }
+
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>💑 커플 연결</h2>
+
+  <!-- ✅ 고정 너비 메시지/버튼 묶음 -->
+  <div class="fixed-width-box">
+
+  <div class="alert" th:if="${alert}" th:text="${alert}"></div>
+
+  <form method="post" th:action="@{/couple/invite}">
+    <input type="text" name="partnerNickname" placeholder="상대방 닉네임 입력" required>
+    <button type="submit">연결하기</button>
+  </form>
+
+  </div>
+</div>
+
+<style>
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #fff0f5;
+    border-top: 2px solid #ffc1cc;
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+    z-index: 999;
+    font-family: 'Helvetica', sans-serif;
+  }
+
+  .bottom-nav a {
+    text-decoration: none;
+    color: #cc5a71;
+    font-size: 15px;
+    font-weight: bold;
+    padding: 6px 10px;
+    border-radius: 10px;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  .bottom-nav a:hover {
+    background: #ffe4ec;
+    color: #e75480;
+  }
+
+  .bottom-nav a.active {
+    background: #ffb6c1;
+    color: white;
+    box-shadow: 0 0 5px rgba(255, 182, 193, 0.6);
+  }
+</style>
+
+<nav class="bottom-nav">
+  <a href="/" th:classappend="${currentURI == '/' ? 'active' : ''}">🏠 메인</a>
+</nav>
+
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>회원가입 | With Us</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- ✅ iOS 전체화면 웹앱 설정 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="WithUs">
+  <!-- iOS 홈화면 아이콘 -->
+  <link rel="apple-touch-icon" sizes="192x192" href="/icons/withuslogo.png">
+
+  <!-- 브라우저 탭 아이콘 -->
+  <link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
+
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #fff0f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .signup-box {
+      background: white;
+      padding: 40px 30px;
+      border-radius: 16px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.05);
+      text-align: center;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    h2 {
+      margin-bottom: 24px;
+      font-size: 22px;
+      color: #333;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 14px;
+      font-size: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    input:focus {
+      border-color: #66bfff;
+      outline: none;
+    }
+
+    button {
+      background: #ff8da9;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #4aa7eb;
+    }
+  </style>
+</head>
+<body>
+<div class="signup-box">
+  <h2>회원가입</h2>
+
+  <!-- 에러 메시지 표시 -->
+  <div th:if="${errorMessage}" style="color: red; margin-bottom: 10px;">
+    <span th:text="${errorMessage}"></span>
+  </div>
+
+  <form th:action="@{/signup}" method="post">
+    <input type="text" name="nickname" placeholder="닉네임" required>
+    <input type="password" name="password" placeholder="비밀번호" required>
+    <button type="submit">가입하기</button>
+  </form>
+</div>
+</body>
+</html>

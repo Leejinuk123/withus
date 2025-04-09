@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>편지 읽기</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- ✅ iOS 전체화면 웹앱 설정 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="WithUs">
+  <!-- iOS 홈화면 아이콘 -->
+  <link rel="apple-touch-icon" sizes="192x192" href="/icons/withuslogo.png">
+
+  <!-- 브라우저 탭 아이콘 -->
+  <link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
+
+  <style>
+    body { font-family: sans-serif; background: #fdf6f0; padding: 20px; }
+    .container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+    .locked { font-size: 20px; text-align: center; color: #ff6b81; margin-top: 50px; }
+    .content { font-size: 16px; white-space: pre-wrap; }
+    .meta { font-size: 12px; color: #888; margin-top: 10px; }
+    .btn-delete {
+      margin-top: 20px; display: block; width: 100%;
+      padding: 12px; background-color: #ffb6b6;
+      border: none; border-radius: 8px; color: white;
+      font-size: 16px; cursor: pointer;
+    }
+    .btn-delete:hover { background-color: #ff8c8c; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div th:if="${letter != null}">
+    <!-- 🔒 잠금된 경우 - 받는 사람만 제한 (보낸 사람은 볼 수 있음) -->
+    <div th:if="${locked}" class="locked">
+      🔒 아직 열 수 없는 편지예요<br>
+      <span th:text="${#temporals.format(letter.unlockDate, 'yyyy.MM.dd HH:mm')}">해제 날짜</span> 이후에 열 수 있어요.
+    </div>
+
+    <!-- 🔓 내용 보기 (보낸 사람이거나 unlockDate 이후인 경우) -->
+    <div th:unless="${locked}">
+      <div class="content" th:text="${letter.content}">편지 내용</div>
+      <div class="meta">
+        보낸 날짜: <span th:text="${#temporals.format(letter.createdAt, 'yyyy.MM.dd HH:mm')}">작성 시간</span>
+      </div>
+
+      <!-- 삭제 버튼 -->
+      <form th:action="@{'/letters/' + ${letter.id} + '/delete'}" method="post">
+        <button type="submit" class="btn-delete">삭제하기</button>
+      </form>
+    </div>
+  </div>
+
+  <div th:if="${letter == null}">
+    <p>편지를 찾을 수 없습니다.</p>
+  </div>
+</div>
+
+<style>
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #fff0f5;
+    border-top: 2px solid #ffc1cc;
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+    z-index: 999;
+    font-family: 'Helvetica', sans-serif;
+  }
+
+  .bottom-nav a {
+    text-decoration: none;
+    color: #cc5a71;
+    font-size: 15px;
+    font-weight: bold;
+    padding: 6px 10px;
+    border-radius: 10px;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  .bottom-nav a:hover {
+    background: #ffe4ec;
+    color: #e75480;
+  }
+
+  .bottom-nav a.active {
+    background: #ffb6c1;
+    color: white;
+    box-shadow: 0 0 5px rgba(255, 182, 193, 0.6);
+  }
+</style>
+
+<nav class="bottom-nav">
+  <a href="/" th:classappend="${currentURI == '/' ? 'active' : ''}">🏠 메인</a>
+  <a href="/letters/received" th:classappend="${currentURI.startsWith('/letters/received') ? 'active' : ''}">📬 받은 편지함</a>
+  <a href="/letters/sent" th:classappend="${currentURI.startsWith('/letters/sent') ? 'active' : ''}">📤 보낸 편지함</a>
+  <a href="/letters/write" th:classappend="${currentURI.startsWith('/letters/write') ? 'active' : ''}">💌 편지 쓰기</a>
+</nav>
+
+</body>
+</html>

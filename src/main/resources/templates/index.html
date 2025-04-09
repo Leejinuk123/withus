@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>With Us</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- ✅ iOS 전체화면 웹앱 설정 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="WithUs">
+  <!-- iOS 홈화면 아이콘 -->
+  <link rel="apple-touch-icon" sizes="192x192" href="/icons/withuslogo.png">
+
+  <!-- 브라우저 탭 아이콘 -->
+  <link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
+
+  <style>
+    body {
+      font-family: 'Helvetica', sans-serif;
+      background: #fff8f0;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .fixed-width-box {
+      width: 260px; /* ✅ 버튼과 메시지 폭 고정 */
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 16px;
+      color: #888;
+    }
+
+    .alert {
+      background: #ffe5e5;
+      color: #cc0000;
+      padding: 15px;
+      margin: 20px auto;
+      border-radius: 8px;
+      font-size: 15px;
+      word-break: break-word;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .message {
+      background: #e8fff1;
+      color: #2d995b;
+      padding: 15px;
+      margin: 20px auto;
+      border-radius: 8px;
+      font-size: 15px;
+      word-break: break-word;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .buttons {
+      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    a.button {
+      text-decoration: none;
+      padding: 12px 20px;
+      background: #ffb6c1;
+      border-radius: 10px;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      transition: background 0.3s;
+      text-align: center;
+    }
+
+    a.button:hover {
+      background: #ff8ea3;
+    }
+
+    .logout {
+      margin-top: 30px;
+      font-size: 14px;
+    }
+
+    .logout a {
+      color: #999;
+      text-decoration: underline;
+    }
+
+    .no-couple {
+      background: #fff3cd;
+      color: #856404;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 30px;
+      font-size: 16px;
+      width: 260px;
+      box-sizing: border-box;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .link-button {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 16px;
+      background-color: #ffa07a;
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .link-button:hover {
+      background-color: #ff7f50;
+    }
+
+    .dday-link {
+      font-size: 18px;
+      color: #ff6b81;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      display: inline-block;
+      cursor: pointer;
+      border: 2px dashed transparent;
+    }
+
+    .dday-link:hover {
+      background-color: #ffecef;
+      border: 2px dashed #ff6b81;
+    }
+
+    .dday-link .edit-icon {
+      font-size: 14px;
+      margin-left: 5px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .dday-link:hover .edit-icon {
+      opacity: 1;
+    }
+
+    .dday-form {
+      margin-top: 10px;
+      background: #fff0f5;
+      padding: 12px 16px;
+      border-radius: 12px;
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .date-input {
+      border: 1px solid #ffc0cb;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 14px;
+      background-color: #fff;
+      color: #333;
+    }
+
+    .submit-btn {
+      background-color: #ff6b81;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .submit-btn:hover {
+      background-color: #ff4d6d;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1 th:if="${nickname}" th:text="'안녕하세요, ' + ${nickname} + '님 😊'"></h1>
+  <h1 th:unless="${nickname}">
+    로그인이 필요합니다. <a href="/login">로그인하기</a>
+  </h1>
+
+  <!-- ✅ D-day 표시 및 수정 폼 -->
+  <div th:if="${dday}">
+    <div class="dday-link" onclick="toggleDdayForm()">
+      <span th:text="${dday}">D+0</span>
+      <span class="edit-icon">✏️</span>
+    </div>
+
+    <form id="ddayForm" th:action="@{/couple/dday-setting}" method="post" style="display: none;" class="dday-form">
+      <input type="date" name="startDate" required class="date-input">
+      <button type="submit" class="submit-btn">저장</button>
+    </form>
+  </div>
+
+  <p>오늘도 서로에게 따뜻한 마음을 전해볼까요?</p>
+
+  <!-- ✅ 고정 너비 메시지/버튼 묶음 -->
+  <div class="fixed-width-box">
+    <div class="message" th:if="${message}" th:text="${message}"></div>
+    <div class="alert" th:if="${alert}" th:text="${alert}"></div>
+
+    <!-- 💔 커플 연결 안내 -->
+    <div th:if="${notCoupled}" class="no-couple">
+      아직 커플이 연결되지 않았어요! 💔<br>
+      상대방에게 커플 신청을 보내보세요.
+      <br>
+      <a th:href="@{/couple/invite}" class="link-button">커플 연결하기</a>
+    </div>
+
+    <div class="buttons" th:if="${nickname}">
+      <a class="button" href="/letters/received">
+        📬 받은 편지함
+        <span th:if="${unreadCount > 0}"
+              th:text="'(' + ${unreadCount} + ')'"
+              style="background: #ff4d6d; color: white; padding: 5px 10px; border-radius: 12px; font-size: 14px; margin-left: 10px;">
+        </span>
+      </a>
+      <a class="button" href="/letters/sent">📤 보낸 편지함</a>
+      <a class="button" href="/letters/write">💌 편지 쓰기</a>
+    </div>
+  </div>
+
+  <!-- ✅ 로그아웃도 로그인한 경우에만 -->
+  <div class="logout" th:if="${nickname}">
+    <a href="/logout">로그아웃</a>
+  </div>
+</div>
+
+<!-- ✅ 인라인 D-day 폼 토글 스크립트 -->
+<script>
+  function toggleDdayForm() {
+    const form = document.getElementById('ddayForm');
+    form.style.display = (form.style.display === 'none') ? 'inline-flex' : 'none';
+  }
+</script>
+</body>
+</html>

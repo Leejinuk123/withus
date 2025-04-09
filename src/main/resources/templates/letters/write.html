@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>편지 쓰기</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- ✅ iOS 전체화면 웹앱 설정 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="WithUs">
+  <!-- iOS 홈화면 아이콘 -->
+  <link rel="apple-touch-icon" sizes="192x192" href="/icons/withuslogo.png">
+
+  <!-- 브라우저 탭 아이콘 -->
+  <link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
+
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #fff8f0;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 180px;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      resize: none;
+      box-sizing: border-box;
+    }
+
+    label {
+      display: block;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    input[type="datetime-local"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin-top: 25px;
+      width: 100%;
+      padding: 14px;
+      background-color: #ffb6c1;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #ff94a3;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>💌 편지 쓰기</h2>
+  <form method="post" th:action="@{/letters/send}">
+    <textarea name="content" placeholder="편지를 써보세요..." required></textarea>
+
+    <label for="unlockDate">🔒 잠금 해제 날짜 (선택)</label>
+    <input type="datetime-local" id="unlockDate" name="unlockDate">
+
+    <button type="submit">보내기</button>
+  </form>
+</div>
+
+<style>
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #fff0f5;
+    border-top: 2px solid #ffc1cc;
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+    z-index: 999;
+    font-family: 'Helvetica', sans-serif;
+  }
+
+  .bottom-nav a {
+    text-decoration: none;
+    color: #cc5a71;
+    font-size: 15px;
+    font-weight: bold;
+    padding: 6px 10px;
+    border-radius: 10px;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  .bottom-nav a:hover {
+    background: #ffe4ec;
+    color: #e75480;
+  }
+
+  .bottom-nav a.active {
+    background: #ffb6c1;
+    color: white;
+    box-shadow: 0 0 5px rgba(255, 182, 193, 0.6);
+  }
+</style>
+
+<nav class="bottom-nav">
+  <a href="/" th:classappend="${currentURI == '/' ? 'active' : ''}">🏠 메인</a>
+  <a href="/letters/received" th:classappend="${currentURI.startsWith('/letters/received') ? 'active' : ''}">📬 받은 편지함</a>
+  <a href="/letters/sent" th:classappend="${currentURI.startsWith('/letters/sent') ? 'active' : ''}">📤 보낸 편지함</a>
+  <a href="/letters/write" th:classappend="${currentURI.startsWith('/letters/write') ? 'active' : ''}">💌 편지 쓰기</a>
+</nav>
+
+</body>
+</html>

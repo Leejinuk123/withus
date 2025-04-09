@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>보낸 편지함</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- ✅ iOS 전체화면 웹앱 설정 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="WithUs">
+  <!-- iOS 홈화면 아이콘 -->
+  <link rel="apple-touch-icon" sizes="192x192" href="/icons/withuslogo.png">
+
+  <!-- 브라우저 탭 아이콘 -->
+  <link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
+
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f0f8ff; }
+    h2 { text-align: center; color: #333; }
+    .letter-list { list-style: none; padding: 0; }
+    .letter-item {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .letter-item a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .status {
+      font-size: 14px;
+      margin-bottom: 5px;
+      color: #666;
+    }
+
+    .locked {
+      color: #e67e88;
+      font-weight: bold;
+    }
+
+    .read {
+      opacity: 0.6;
+    }
+
+    .meta {
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+<h2>📤 보낸 편지함</h2>
+
+<ul class="letter-list">
+  <li th:each="letter : ${sentLetters}" class="letter-item">
+    <a th:href="@{'/letters/view/' + ${letter.id}}">
+
+      <!-- 🔒 잠금 여부 표시 -->
+      <div class="status">
+        <span th:if="${letter.unlockDate != null and letter.unlockDate > T(java.time.LocalDateTime).now()}" class="locked">
+          🔒 잠금 중 (해제일: <span th:text="${#temporals.format(letter.unlockDate, 'yyyy.MM.dd HH:mm')}">0000.00.00</span>)
+        </span>
+        <span th:if="${letter.unlockDate == null or letter.unlockDate <= T(java.time.LocalDateTime).now()}">
+          <span th:if="${letter.read}" class="read">✅ 읽음</span>
+          <span th:if="${!letter.read}">📭 안 읽음</span>
+        </span>
+      </div>
+
+      <!-- 📃 내용 요약: 잠금 여부와 관계없이 항상 표시 -->
+      <div th:text="${#strings.abbreviate(letter.content, 30)}"
+           th:classappend="${letter.read} ? 'read' : ''">
+        내용 요약
+      </div>
+
+      <div class="meta" th:text="${#temporals.format(letter.createdAt, 'yyyy.MM.dd HH:mm')}">작성 시간</div>
+    </a>
+  </li>
+</ul>
+
+<!-- ✉️ 보낸 편지가 없을 때 안내 메시지 -->
+<div th:if="${#lists.isEmpty(sentLetters)}" style="
+     background: white;
+     border-radius: 10px;
+     padding: 20px;
+     margin-top: 20px;
+     text-align: center;
+     box-shadow: 0 0 5px rgba(0,0,0,0.05);
+     font-size: 16px;
+     color: #999;">
+  아직 보낸 편지가 없어요 💌
+</div>
+
+<style>
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #fff0f5;
+    border-top: 2px solid #ffc1cc;
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+    z-index: 999;
+    font-family: 'Helvetica', sans-serif;
+  }
+
+  .bottom-nav a {
+    text-decoration: none;
+    color: #cc5a71;
+    font-size: 15px;
+    font-weight: bold;
+    padding: 6px 10px;
+    border-radius: 10px;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  .bottom-nav a:hover {
+    background: #ffe4ec;
+    color: #e75480;
+  }
+
+  .bottom-nav a.active {
+    background: #ffb6c1;
+    color: white;
+    box-shadow: 0 0 5px rgba(255, 182, 193, 0.6);
+  }
+</style>
+
+<nav class="bottom-nav">
+  <a href="/" th:classappend="${currentURI == '/' ? 'active' : ''}">🏠 메인</a>
+  <a href="/letters/received" th:classappend="${currentURI.startsWith('/letters/received') ? 'active' : ''}">📬 받은 편지함</a>
+  <a href="/letters/sent" th:classappend="${currentURI.startsWith('/letters/sent') ? 'active' : ''}">📤 보낸 편지함</a>
+  <a href="/letters/write" th:classappend="${currentURI.startsWith('/letters/write') ? 'active' : ''}">💌 편지 쓰기</a>
+</nav>
+
+</body>
+</html>

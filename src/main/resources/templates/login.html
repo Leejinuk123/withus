@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>로그인 | With Us</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- ✅ iOS 전체화면 웹앱 설정 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="WithUs">
+  <!-- iOS 홈화면 아이콘 -->
+  <link rel="apple-touch-icon" sizes="192x192" href="/icons/withuslogo.png">
+
+  <!-- 브라우저 탭 아이콘 -->
+  <link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
+
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #fff0f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-box {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      text-align: center;
+      width: 300px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    button[type="submit"],
+    a.signup-btn {
+      padding: 10px;
+      background: #ff8da9;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 15px;
+      display: block;
+      text-decoration: none;
+      margin-top: 5px;
+    }
+
+    button[type="submit"]:hover,
+    a.signup-btn:hover {
+      background: #ff6b91;
+    }
+
+    .divider {
+      margin: 15px 0;
+      font-size: 14px;
+      color: #aaa;
+    }
+
+    .message {
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .success { color: green; }
+    .error { color: red; }
+
+    a.kakao-btn {
+      display: inline-block;
+      padding: 12px 20px;
+      background: #fee500;
+      color: #3c1e1e;
+      font-weight: bold;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    a.kakao-btn:hover {
+      background: #fada00;
+    }
+  </style>
+</head>
+<body>
+<div class="login-box">
+  <h2>With Us 🧑‍❤️‍👩</h2>
+
+  <!-- 성공/실패 메시지 -->
+  <div class="message success" th:if="${param.signupSuccess}">
+    회원가입이 완료되었습니다! 로그인 해주세요 😊
+  </div>
+
+  <div class="message error" th:if="${param.error}">
+    <span th:if="${param.error == 'session'}">세션이 만료되었습니다. 다시 로그인 해주세요.</span>
+    <span th:unless="${param.error == 'session'}">로그인에 실패했습니다. 아이디 또는 비밀번호를 확인하세요.</span>
+  </div>
+
+  <!-- 기본 로그인 폼 -->
+  <form th:action="@{/login/custom}" method="post">
+    <input type="text" name="username" th:value="${param.username}" placeholder="아이디" required>
+    <input type="password" name="password" placeholder="비밀번호" required>
+    <button type="submit">로그인</button>
+  </form>
+
+  <!-- 회원가입 버튼 -->
+  <a class="signup-btn" th:href="@{/signup}">회원가입</a>
+
+  <div class="divider">또는</div>
+
+  <!-- 카카오 로그인 버튼 -->
+  <a class="kakao-btn" href="/oauth2/authorization/kakao">카카오로 로그인</a>
+</div>
+</body>
+</html>
