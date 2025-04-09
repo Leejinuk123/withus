@@ -27,7 +27,11 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getNickname(); // 닉네임을 username으로 사용
+        return user.getLoginId(); // 실제 로그인 식별자
+    }
+
+    public String getNickname() {
+        return user.getNickname();
     }
 
     @Override public boolean isAccountNonExpired() { return true; }

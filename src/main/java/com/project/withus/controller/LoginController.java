@@ -21,38 +21,34 @@ public class LoginController {
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login/custom")
-    public String login(@RequestParam String username,
+    public String login(@RequestParam String loginId,
             @RequestParam String password,
             HttpServletRequest request) {
 
-        return userRepository.findByNickname(username)
+        return userRepository.findByLoginId(loginId)
                 .filter(user -> passwordEncoder.matches(password, user.getPassword()))
                 .map(user -> {
-                    // ✅ CustomUserDetails 생성
                     CustomUserDetails userDetails = new CustomUserDetails(user);
 
-                    // ✅ 인증 객체 생성
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(
                                     userDetails, null, userDetails.getAuthorities());
 
-                    // ✅ SecurityContext에 등록
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                    // ✅ 세션에 SecurityContext 저장
                     request.getSession().setAttribute(
                             HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
                             SecurityContextHolder.getContext());
 
                     return "redirect:/";
                 })
-                .orElse("redirect:/login?error");
+                .orElse("redirect:/login?error&loginId=" + loginId); // 실패 시 입력 값 유지용
     }
 
     @GetMapping("/logout")
     public String logout(HttpServletRequest request) {
         request.getSession().invalidate();
-        SecurityContextHolder.clearContext(); // 인증도 초기화
+        SecurityContextHolder.clearContext();
         return "redirect:/login";
     }
 }

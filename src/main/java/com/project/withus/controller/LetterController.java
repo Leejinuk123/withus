@@ -155,13 +155,14 @@ public class LetterController {
     @SuppressWarnings("unchecked")
     private User extractUser(Object principal) {
         if (principal instanceof OAuth2User oauthUser) {
-            String nickname = ((Map<String, Object>) ((Map<String, Object>) oauthUser.getAttributes().get("kakao_account"))
-                    .get("profile")).get("nickname").toString();
-            return userRepository.findByNickname(nickname).orElseThrow();
+            String oauthId = String.valueOf(oauthUser.getAttributes().get("id"));
+            return userRepository.findByOauthId(oauthId)
+                    .orElseThrow(() -> new IllegalStateException("소셜 로그인 유저를 찾을 수 없습니다."));
         } else if (principal instanceof CustomUserDetails userDetails) {
             return userDetails.getUser();
         } else {
             throw new IllegalStateException("로그인 상태가 아닙니다.");
         }
     }
+
 }

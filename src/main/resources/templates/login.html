@@ -121,7 +121,7 @@
 
   <!-- 기본 로그인 폼 -->
   <form th:action="@{/login/custom}" method="post">
-    <input type="text" name="username" th:value="${param.username}" placeholder="아이디" required>
+    <input type="text" name="loginId" th:value="${param.loginId}" placeholder="아이디" required>
     <input type="password" name="password" placeholder="비밀번호" required>
     <button type="submit">로그인</button>
   </form>

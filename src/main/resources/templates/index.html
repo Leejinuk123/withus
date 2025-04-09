@@ -5,14 +5,10 @@
   <title>With Us</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- ✅ iOS 전체화면 웹앱 설정 -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="WithUs">
-  <!-- iOS 홈화면 아이콘 -->
   <link rel="apple-touch-icon" sizes="192x192" href="/icons/withuslogo.png">
-
-  <!-- 브라우저 탭 아이콘 -->
   <link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
 
   <style>
@@ -35,7 +31,7 @@
     }
 
     .fixed-width-box {
-      width: 260px; /* ✅ 버튼과 메시지 폭 고정 */
+      width: 260px;
       margin: 0 auto;
     }
 
@@ -44,33 +40,60 @@
       margin-bottom: 10px;
     }
 
-    p {
-      font-size: 16px;
-      color: #888;
+    .nickname-click {
+      cursor: pointer;
+      text-decoration: underline;
+      color: #ff6b81;
+    }
+
+    .nickname-form {
+      display: none;
+      margin-top: 10px;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .nickname-form input {
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .nickname-form button {
+      background: #ff8ea3;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .alert, .message, .no-couple {
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 15px;
+      word-break: break-word;
+      width: 100%;
+      box-sizing: border-box;
+      margin: 20px auto;
     }
 
     .alert {
       background: #ffe5e5;
       color: #cc0000;
-      padding: 15px;
-      margin: 20px auto;
-      border-radius: 8px;
-      font-size: 15px;
-      word-break: break-word;
-      width: 100%;
-      box-sizing: border-box;
     }
 
     .message {
       background: #e8fff1;
       color: #2d995b;
-      padding: 15px;
-      margin: 20px auto;
-      border-radius: 8px;
-      font-size: 15px;
-      word-break: break-word;
-      width: 100%;
-      box-sizing: border-box;
+    }
+
+    .no-couple {
+      background: #fff3cd;
+      color: #856404;
     }
 
     .buttons {
@@ -104,19 +127,6 @@
     .logout a {
       color: #999;
       text-decoration: underline;
-    }
-
-    .no-couple {
-      background: #fff3cd;
-      color: #856404;
-      padding: 20px;
-      border-radius: 12px;
-      margin-top: 30px;
-      font-size: 16px;
-      width: 260px;
-      box-sizing: border-box;
-      margin-left: auto;
-      margin-right: auto;
     }
 
     .link-button {
@@ -201,18 +211,25 @@
 </head>
 <body>
 <div class="container">
-  <h1 th:if="${nickname}" th:text="'안녕하세요, ' + ${nickname} + '님 😊'"></h1>
+  <!-- 닉네임 표시 영역 -->
+  <h1 th:if="${nickname}">
+    <span class="nickname-click" onclick="toggleNicknameForm()" th:text="'안녕하세요, ' + ${nickname} + '님 😊'"></span>
+  </h1>
+  <form id="nicknameForm" class="nickname-form" th:action="@{/nickname/edit}" method="post">
+    <input type="text" name="nickname" placeholder="새 닉네임" required>
+    <button type="submit">변경</button>
+  </form>
+
   <h1 th:unless="${nickname}">
     로그인이 필요합니다. <a href="/login">로그인하기</a>
   </h1>
 
-  <!-- ✅ D-day 표시 및 수정 폼 -->
+  <!-- D-day -->
   <div th:if="${dday}">
     <div class="dday-link" onclick="toggleDdayForm()">
       <span th:text="${dday}">D+0</span>
       <span class="edit-icon">✏️</span>
     </div>
-
     <form id="ddayForm" th:action="@{/couple/dday-setting}" method="post" style="display: none;" class="dday-form">
       <input type="date" name="startDate" required class="date-input">
       <button type="submit" class="submit-btn">저장</button>
@@ -221,12 +238,10 @@
 
   <p>오늘도 서로에게 따뜻한 마음을 전해볼까요?</p>
 
-  <!-- ✅ 고정 너비 메시지/버튼 묶음 -->
   <div class="fixed-width-box">
     <div class="message" th:if="${message}" th:text="${message}"></div>
     <div class="alert" th:if="${alert}" th:text="${alert}"></div>
 
-    <!-- 💔 커플 연결 안내 -->
     <div th:if="${notCoupled}" class="no-couple">
       아직 커플이 연결되지 않았어요! 💔<br>
       상대방에게 커플 신청을 보내보세요.
@@ -238,26 +253,28 @@
       <a class="button" href="/letters/received">
         📬 받은 편지함
         <span th:if="${unreadCount > 0}"
-              th:text="'(' + ${unreadCount} + ')'"
-              style="background: #ff4d6d; color: white; padding: 5px 10px; border-radius: 12px; font-size: 14px; margin-left: 10px;">
-        </span>
+              th:text="'(' + ${unreadCount} + ')'"></span>
       </a>
       <a class="button" href="/letters/sent">📤 보낸 편지함</a>
       <a class="button" href="/letters/write">💌 편지 쓰기</a>
     </div>
   </div>
 
-  <!-- ✅ 로그아웃도 로그인한 경우에만 -->
   <div class="logout" th:if="${nickname}">
     <a href="/logout">로그아웃</a>
   </div>
 </div>
 
-<!-- ✅ 인라인 D-day 폼 토글 스크립트 -->
+<!-- JS for toggle -->
 <script>
   function toggleDdayForm() {
     const form = document.getElementById('ddayForm');
     form.style.display = (form.style.display === 'none') ? 'inline-flex' : 'none';
+  }
+
+  function toggleNicknameForm() {
+    const form = document.getElementById('nicknameForm');
+    form.style.display = (form.style.display === 'none') ? 'flex' : 'none';
   }
 </script>
 </body>

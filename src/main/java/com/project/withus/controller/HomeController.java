@@ -34,12 +34,11 @@ public class HomeController {
 
         model.addAttribute("currentURI", request.getRequestURI()); // 👈 추가!
 
-        // 1. 카카오 로그인 유저 처리
+        // 1. 카카오 로그인 유저 처리 (✅ oauthId 기준 조회)
         if (principal instanceof OAuth2User oauthUser) {
-            String myNickname = ((Map<String, Object>) ((Map<String, Object>) oauthUser.getAttributes().get("kakao_account"))
-                    .get("profile")).get("nickname").toString();
-            me = userRepository.findByNickname(myNickname).orElseThrow();
-            model.addAttribute("nickname", myNickname);
+            String oauthId = String.valueOf(oauthUser.getAttributes().get("id"));
+            me = userRepository.findByOauthId(oauthId).orElseThrow();
+            model.addAttribute("nickname", me.getNickname());
         }
 
         // 2. 일반 로그인 유저 처리 (CustomUserDetails)

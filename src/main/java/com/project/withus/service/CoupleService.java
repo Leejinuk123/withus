@@ -20,17 +20,21 @@ public class CoupleService {
     private final CoupleRepository coupleRepository;
     private final UserRepository userRepository;
 
-    public Couple createCouple(User me, String partnerNickname) {
-        Optional<User> partnerOpt = userRepository.findByNickname(partnerNickname);
+    public Couple createCouple(User me, String partnerInviteCode) {
+        Optional<User> partnerOpt = userRepository.findByInviteCode(partnerInviteCode);
         if (partnerOpt.isEmpty()) {
-            throw new RuntimeException("상대방 닉네임이 존재하지 않아요!");
+            throw new RuntimeException("초대코드가 유효하지 않아요!");
         }
 
         User partner = partnerOpt.get();
 
+        // 자기 자신 연결 방지
+        if (me.getId().equals(partner.getId())) {
+            throw new RuntimeException("자기 자신과는 연결할 수 없어요!");
+        }
+
         // 이미 커플인지 확인
-        if (coupleRepository.findByUser1OrUser2(me, me).isPresent() ||
-                coupleRepository.findByUser1OrUser2(partner, partner).isPresent()) {
+        if (getMyCouple(me).isPresent() || getMyCouple(partner).isPresent()) {
             throw new RuntimeException("이미 커플이에요!");
         }
 

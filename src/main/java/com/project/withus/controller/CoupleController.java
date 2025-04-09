@@ -29,27 +29,30 @@ public class CoupleController {
     private final UserRepository userRepository;
 
     @GetMapping("/invite")
-    public String invitePage() {
+    public String invitePage(@AuthenticationPrincipal Object principal, Model model) {
+        User me = extractUser(principal);
+        model.addAttribute("inviteCode", me.getInviteCode()); // ✅ 초대코드 전달
         return "couple/invite";
     }
 
     @PostMapping("/invite")
     public String invite(@AuthenticationPrincipal Object principal,
-            @RequestParam String partnerNickname,
+            @RequestParam String partnerInviteCode,
             Model model) {
 
         User me = null;
 
-        // 1. 카카오 로그인 유저 처리
+        // 1. 카카오 로그인 유저 처리 (✅ oauthId 기준 조회)
         if (principal instanceof OAuth2User oauthUser) {
-            String myNickname = ((Map<String, Object>) ((Map<String, Object>) oauthUser.getAttributes().get("kakao_account"))
-                    .get("profile")).get("nickname").toString();
-            me = userRepository.findByNickname(myNickname).orElseThrow();
+            String oauthId = String.valueOf(oauthUser.getAttributes().get("id"));
+            me = userRepository.findByOauthId(oauthId).orElseThrow();
+            model.addAttribute("nickname", me.getNickname());
         }
 
-        // 2. 일반 로그인 유저 처리
+        // 2. 일반 로그인 유저 처리 (CustomUserDetails)
         else if (principal instanceof CustomUserDetails userDetails) {
             me = userDetails.getUser();
+            model.addAttribute("nickname", me.getNickname());
         }
 
         if (me == null) {
@@ -58,12 +61,13 @@ public class CoupleController {
         }
 
         try {
-            coupleService.createCouple(me, partnerNickname);
+            coupleService.createCouple(me, partnerInviteCode);
             model.addAttribute("message", "커플 연결 성공! ❤️");
             return "redirect:/";
         } catch (RuntimeException e) {
             model.addAttribute("alert", e.getMessage());
-            return "couple/invite"; // 실패하면 다시 폼으로
+            model.addAttribute("inviteCode", me.getInviteCode()); // 실패 시도 다시 띄워줘야 해!
+            return "couple/invite";
         }
     }
 
@@ -84,14 +88,15 @@ public class CoupleController {
     @SuppressWarnings("unchecked")
     private User extractUser(Object principal) {
         if (principal instanceof OAuth2User oauthUser) {
-            String nickname = ((Map<String, Object>) ((Map<String, Object>) oauthUser.getAttributes().get("kakao_account"))
-                    .get("profile")).get("nickname").toString();
-            return userRepository.findByNickname(nickname).orElseThrow();
+            String oauthId = String.valueOf(oauthUser.getAttributes().get("id"));
+            return userRepository.findByOauthId(oauthId)
+                    .orElseThrow(() -> new IllegalStateException("소셜 로그인 유저를 찾을 수 없습니다."));
         } else if (principal instanceof CustomUserDetails userDetails) {
             return userDetails.getUser();
         } else {
             throw new IllegalStateException("로그인 상태가 아닙니다.");
         }
     }
+
 
 }
