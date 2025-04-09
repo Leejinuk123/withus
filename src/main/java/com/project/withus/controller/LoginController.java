@@ -1,13 +1,9 @@
 package com.project.withus.controller;
 
-import com.project.withus.domain.user.CustomUserDetails;
 import com.project.withus.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,27 +24,15 @@ public class LoginController {
         return userRepository.findByLoginId(loginId)
                 .filter(user -> passwordEncoder.matches(password, user.getPassword()))
                 .map(user -> {
-                    CustomUserDetails userDetails = new CustomUserDetails(user);
-
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails, null, userDetails.getAuthorities());
-
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                    request.getSession().setAttribute(
-                            HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
-                            SecurityContextHolder.getContext());
-
+                    request.getSession().setAttribute("LOGIN_USER", user); // ✅ 세션에 유저 저장
                     return "redirect:/";
                 })
-                .orElse("redirect:/login?error&loginId=" + loginId); // 실패 시 입력 값 유지용
+                .orElse("redirect:/login?error&loginId=" + loginId);
     }
 
     @GetMapping("/logout")
     public String logout(HttpServletRequest request) {
-        request.getSession().invalidate();
-        SecurityContextHolder.clearContext();
+        request.getSession().invalidate(); // ✅ 세션 초기화
         return "redirect:/login";
     }
 }

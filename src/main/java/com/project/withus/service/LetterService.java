@@ -19,9 +19,6 @@ public class LetterService {
 
     private final LetterRepository letterRepository;
 
-    @PersistenceContext
-    private EntityManager entityManager; // EntityManager 주입
-
     // 편지 보내기
     @Transactional
     public Letter sendLetter(User sender, User receiver, String content, LocalDateTime unlockDate) {

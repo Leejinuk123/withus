@@ -1,17 +1,13 @@
 package com.project.withus.controller;
 
 import com.project.withus.domain.couple.Couple;
-import com.project.withus.domain.user.CustomUserDetails;
 import com.project.withus.domain.user.User;
 import com.project.withus.repository.UserRepository;
 import com.project.withus.service.CoupleService;
 import com.project.withus.service.LetterService;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,42 +22,32 @@ public class HomeController {
     private final LetterService letterService;
 
     @GetMapping("/")
-    public String home(@AuthenticationPrincipal Object principal,
+    public String home(
             @RequestParam(required = false) Boolean noCouple,
-            Model model, HttpServletRequest request) {
+            Model model,
+            HttpServletRequest request
+    ) {
+        User me = (User) request.getSession().getAttribute("LOGIN_USER");
 
-        User me = null;
-
-        model.addAttribute("currentURI", request.getRequestURI()); // 👈 추가!
-
-        // 1. 카카오 로그인 유저 처리 (✅ oauthId 기준 조회)
-        if (principal instanceof OAuth2User oauthUser) {
-            String oauthId = String.valueOf(oauthUser.getAttributes().get("id"));
-            me = userRepository.findByOauthId(oauthId).orElseThrow();
-            model.addAttribute("nickname", me.getNickname());
+        // ✅ 로그인 안 한 경우 → /login 으로 이동
+        if (me == null) {
+            return "redirect:/login";
         }
 
-        // 2. 일반 로그인 유저 처리 (CustomUserDetails)
-        else if (principal instanceof CustomUserDetails userDetails) {
-            me = userDetails.getUser();
-            model.addAttribute("nickname", me.getNickname());
+        model.addAttribute("nickname", me.getNickname());
+        model.addAttribute("currentURI", request.getRequestURI());
+
+        Optional<Couple> myCouple = coupleService.getMyCouple(me);
+        model.addAttribute("notCoupled", myCouple.isEmpty());
+
+        if (myCouple.isPresent()) {
+            long dday = coupleService.getDDay(me) + 1;
+            model.addAttribute("dday", "D+" + dday);
         }
 
-        // 3. 로그인된 경우에만 커플, 편지 데이터 처리
-        if (me != null) {
-            Optional<Couple> myCouple = coupleService.getMyCouple(me);
-            model.addAttribute("notCoupled", myCouple.isEmpty());
+        long unreadCount = letterService.countUnreadLetters(me);
+        model.addAttribute("unreadCount", unreadCount);
 
-            if (myCouple.isPresent()) {
-                long dday = coupleService.getDDay(me) + 1;
-                model.addAttribute("dday", "D+" + dday);
-            }
-
-            long unreadCount = letterService.countUnreadLetters(me);
-            model.addAttribute("unreadCount", unreadCount);
-        }
-
-        // 4. 커플 연결 안 된 경우 메시지
         if (noCouple != null && noCouple) {
             model.addAttribute("alert", "아직 커플 연결이 되지 않아 편지를 사용할 수 없어요 😢");
         }

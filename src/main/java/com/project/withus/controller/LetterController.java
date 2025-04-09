@@ -2,7 +2,6 @@ package com.project.withus.controller;
 
 import com.project.withus.domain.couple.Couple;
 import com.project.withus.domain.letter.Letter;
-import com.project.withus.domain.user.CustomUserDetails;
 import com.project.withus.domain.user.User;
 import com.project.withus.repository.UserRepository;
 import com.project.withus.service.CoupleService;
@@ -10,11 +9,8 @@ import com.project.withus.service.LetterService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,93 +28,106 @@ public class LetterController {
     private final CoupleService coupleService;
     private final LetterService letterService;
 
-    // 📬 받은 편지 목록
+    private User getLoginUser(HttpServletRequest request) {
+        return (User) request.getSession().getAttribute("LOGIN_USER");
+    }
+
+    private String redirectIfNotLoggedIn(User user) {
+        return (user == null) ? "redirect:/login?error=session" : null;
+    }
+
+    private String redirectIfNotCoupled(User user) {
+        return coupleService.isNotCoupled(user) ? "redirect:/?noCouple=true" : null;
+    }
+
     @GetMapping("/received")
-    public String receivedLetters(@AuthenticationPrincipal Object principal, Model model, HttpServletRequest request) {
-        User user = extractUser(principal);
+    public String receivedLetters(HttpServletRequest request, Model model) {
+        User user = getLoginUser(request);
+        model.addAttribute("currentURI", request.getRequestURI());
 
-        model.addAttribute("currentURI", request.getRequestURI()); // 👈 추가!
+        String redirect = redirectIfNotLoggedIn(user);
+        if (redirect != null) return redirect;
 
-        if (coupleService.isNotCoupled(user)) {
-            return "redirect:/?noCouple=true";
-        }
+        redirect = redirectIfNotCoupled(user);
+        if (redirect != null) return redirect;
 
         List<Letter> letters = letterService.getReceivedLetters(user);
         model.addAttribute("receivedLetters", letters);
         return "letters/received";
     }
 
-    // 📤 보낸 편지 목록
     @GetMapping("/sent")
-    public String sentLetters(@AuthenticationPrincipal Object principal, Model model, HttpServletRequest request) {
-        User user = extractUser(principal);
+    public String sentLetters(HttpServletRequest request, Model model) {
+        User user = getLoginUser(request);
+        model.addAttribute("currentURI", request.getRequestURI());
 
-        model.addAttribute("currentURI", request.getRequestURI()); // 👈 추가!
+        String redirect = redirectIfNotLoggedIn(user);
+        if (redirect != null) return redirect;
 
-        if (coupleService.isNotCoupled(user)) {
-            return "redirect:/?noCouple=true";
-        }
+        redirect = redirectIfNotCoupled(user);
+        if (redirect != null) return redirect;
 
         List<Letter> letters = letterService.getSentLetters(user);
         model.addAttribute("sentLetters", letters);
         model.addAttribute("type", "sent");
-
         return "letters/sent";
     }
 
-    // 💌 편지 쓰기 페이지
     @GetMapping("/write")
-    public String writeLetterForm(@AuthenticationPrincipal Object principal, Model model, HttpServletRequest request) {
-        User user = extractUser(principal);
-        model.addAttribute("currentURI", request.getRequestURI()); // 👈 추가!
+    public String writeLetterForm(HttpServletRequest request, Model model) {
+        User user = getLoginUser(request);
+        model.addAttribute("currentURI", request.getRequestURI());
 
-        if (coupleService.isNotCoupled(user)) {
-            return "redirect:/?noCouple=true";
-        }
+        String redirect = redirectIfNotLoggedIn(user);
+        if (redirect != null) return redirect;
+
+        redirect = redirectIfNotCoupled(user);
+        if (redirect != null) return redirect;
+
         return "letters/write";
     }
 
-    // 💌 편지 전송
     @PostMapping("/send")
-    public String sendLetter(@AuthenticationPrincipal Object principal,
+    public String sendLetter(
             @RequestParam String content,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-            LocalDateTime unlockDate) {
+            LocalDateTime unlockDate,
+            HttpServletRequest request) {
 
-        User me = extractUser(principal);
-        Couple couple = coupleService.getMyCouple(me).orElseThrow(() -> new RuntimeException("커플이 연결되지 않았어요!"));
+        User me = getLoginUser(request);
+        String redirect = redirectIfNotLoggedIn(me);
+        if (redirect != null) return redirect;
+
+        Couple couple = coupleService.getMyCouple(me)
+                .orElseThrow(() -> new RuntimeException("커플이 연결되지 않았어요!"));
         User partner = coupleService.getPartner(me, couple);
 
         letterService.sendLetter(me, partner, content, unlockDate);
         return "redirect:/letters/sent";
     }
 
-    // 👀 편지 읽기
     @GetMapping("/view/{id}")
-    public String readLetter(@AuthenticationPrincipal Object principal,
+    public String readLetter(
             @PathVariable Long id,
             Model model,
             HttpServletRequest request) {
-        User user = extractUser(principal);
+
+        User user = getLoginUser(request);
         model.addAttribute("currentURI", request.getRequestURI());
+
+        String redirect = redirectIfNotLoggedIn(user);
+        if (redirect != null) return redirect;
 
         try {
             Letter letter = letterService.readLetter(user, id);
 
-            // 잠금 여부 판단 (받는 사람만 제한)
             boolean isLocked = user.getId().equals(letter.getReceiver().getId()) &&
                     letter.getUnlockDate() != null &&
                     letter.getUnlockDate().isAfter(LocalDateTime.now());
 
-            // 로그 출력
-            System.out.println("읽은 편지 ID: " + letter.getId() +
-                    ", 보낸이: " + letter.getSender().getId() +
-                    ", 받는이: " + letter.getReceiver().getId());
-
             model.addAttribute("letter", letter);
-            model.addAttribute("locked", isLocked); // 🔒 잠금 여부 전달
-
+            model.addAttribute("locked", isLocked);
             return "letters/view";
 
         } catch (RuntimeException e) {
@@ -129,14 +138,17 @@ public class LetterController {
         }
     }
 
-    // 🗑 편지 삭제 - 삭제 주체에 따라 리다이렉트 경로 분기
     @PostMapping("/{id}/delete")
-    public String deleteLetter(@AuthenticationPrincipal Object principal,
+    public String deleteLetter(
             @PathVariable Long id,
             Model model,
             HttpServletRequest request) {
-        User user = extractUser(principal);
-        String currentURI = request.getRequestURI();
+
+        User user = getLoginUser(request);
+        model.addAttribute("currentURI", request.getRequestURI());
+
+        String redirect = redirectIfNotLoggedIn(user);
+        if (redirect != null) return redirect;
 
         try {
             boolean isSender = letterService.deleteLetter(user, id);
@@ -145,24 +157,8 @@ public class LetterController {
         } catch (RuntimeException e) {
             Letter letter = letterService.findById(id);
             model.addAttribute("letter", letter);
-            model.addAttribute("currentURI", currentURI);
             model.addAttribute("errorMessage", e.getMessage());
             return "letters/view";
         }
     }
-
-    // ✅ 유저 추출 공통 메서드
-    @SuppressWarnings("unchecked")
-    private User extractUser(Object principal) {
-        if (principal instanceof OAuth2User oauthUser) {
-            String oauthId = String.valueOf(oauthUser.getAttributes().get("id"));
-            return userRepository.findByOauthId(oauthId)
-                    .orElseThrow(() -> new IllegalStateException("소셜 로그인 유저를 찾을 수 없습니다."));
-        } else if (principal instanceof CustomUserDetails userDetails) {
-            return userDetails.getUser();
-        } else {
-            throw new IllegalStateException("로그인 상태가 아닙니다.");
-        }
-    }
-
 }

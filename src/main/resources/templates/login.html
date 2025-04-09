@@ -89,7 +89,7 @@
     .success { color: green; }
     .error { color: red; }
 
-    a.kakao-btn {
+    .kakao-btn {
       display: inline-block;
       padding: 12px 20px;
       background: #fee500;
@@ -98,12 +98,41 @@
       border-radius: 8px;
       text-decoration: none;
       font-size: 16px;
+      cursor: pointer;
     }
 
-    a.kakao-btn:hover {
+    .kakao-btn:hover {
       background: #fada00;
     }
   </style>
+
+  <!-- ✅ 카카오 JS SDK 추가 -->
+  <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+  <script>
+    Kakao.init('95c847fc5de804383c6245d73415bf37'); // ← 너의 실제 JavaScript 키로 바꿔야 해
+
+    function kakaoLogin() {
+      Kakao.Auth.login({
+        success: function(authObj) {
+          fetch('/login/kakao/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: authObj.access_token })
+          })
+          .then(res => {
+            if (res.ok) {
+              window.location.href = '/'; // 로그인 성공 시 홈으로
+            } else {
+              alert('카카오 로그인 실패 😥');
+            }
+          });
+        },
+        fail: function(err) {
+          alert('카카오 로그인 오류: ' + JSON.stringify(err));
+        }
+      });
+    }
+  </script>
 </head>
 <body>
 <div class="login-box">
@@ -132,7 +161,7 @@
   <div class="divider">또는</div>
 
   <!-- 카카오 로그인 버튼 -->
-  <a class="kakao-btn" href="/oauth2/authorization/kakao">카카오로 로그인</a>
+  <div class="kakao-btn" onclick="kakaoLogin()">카카오로 로그인</div>
 </div>
 </body>
 </html>
